@@ -37,7 +37,25 @@ Edit the config file to choose the triggers we are interested in (you can use `n
 ```bash
 nano TriggerInfoTool/TriggerSimplePrescalesAnalyzer/python/simpleprescalesinfoanalyzer_cfg.py
 ```
-Replace the `PoolSource` files with the ones we used in our last episode, replace the triggerPatterns parameter with a simpler trigger, like `"HLT_Mu12_v??"` (note the wildcard at the end `??`, so we can get the prescales for all versions of this trigger).  Also, **make absolutely sure you have access to the conditions database information needed for 2012, which is different than that for 2011**; feel free to just replace the whole config file with the example below.  
+Replace the `PoolSource` files with the ones we used in our last episode, replace the triggerPatterns parameter with a simpler trigger, like `"HLT_Mu12_v??"` (note the wildcard at the end `??`, so we can get the prescales for all versions of this trigger).  Also, **make absolutely sure you have access to the conditions database information needed for 2012, which is different than that for 2011**.  They look like:
+
+~~~
+#needed to cache the conditions data
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+#Uncomment if using CVMFS file system for accessing conditions
+#process.GlobalTag.connect = cms.string('sqlite_file:/cvmfs/cms-opendata-conddb.cern.ch/FT53_V21A_AN6_FULL.db')
+process.GlobalTag.globaltag = 'FT53_V21A_AN6::All'
+~~~
+{: .language-python}
+
+
+These lines, with `GlobaTag` in them, have to do with being able to read CMSSW database information.  We call this the [Conditions Data](http://opendata.cern.ch/docs/cms-guide-for-condition-database) as we may find values for calibration, alignment, trigger prescales, etc., in there .  One can think of the `GlobalTag` as a label that contains a set of database snapshots that need to be adequate for a point in time in the history of the CMS detector.  For 2012 open data release, the global tag is `FT53_V21A_AN6` (the `::All` string is a flag that tells the frameworks to read *All* the information associated with the tag).  
+
+The `connect` variable in one of those lines just modifies they way in which the framework is going to access these snapshots. Here, there is a key difference between using the **Virtual Machine** or the **Docker container**.  When using the Virtual Machine, all three lines need to be **uncommented**. This is because when using VMs, we read these conditions from the shared files system area at CERN (CVMFS), so we need it active.  Read in this way, the conditions will be cached locally in your virtual machine the first time you run and so the CMSSW job will be slow.  Fortunately, we already did this while setting up our VM, so our jobs will run much faster.  This does not really matter for the Docker container.
+
+If you are using the Docker container, the connect line (second line of the group) needs to be **commented out**.
+
+Feel free to just replace the whole config file with the example below and make the one change about the connection line we talked about.  
 
 > ## Take a look at the config file
 >
@@ -108,11 +126,11 @@ cmsRun TriggerInfoTool/TriggerSimplePrescalesAnalyzer/python/simpleprescalesinfo
 >
 {: .solution}
 
-> ## Challenge and assignment!
+> ## Challenge!
 >
 > How about now you run with the triggers we were interested in, i.e., the `HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v?` ones.  What do you get?
 >
-> > ## Solution and asignment
+> > ## Solution and work assignment
 > >
 <!--
 > > You will see an output like this:
@@ -135,13 +153,13 @@ cmsRun TriggerInfoTool/TriggerSimplePrescalesAnalyzer/python/simpleprescalesinfo
 -->
 > >
 > > Life is not so easy sometimes.  While there was no problem getting the HLT prescale (it seems to be 1), i.e., the trigger is unprescaled at the HLT, we can't say
-> > anything about the L1 because there is a limitation in our software.  You will get an error message.  **Please submit, to the [assignment form](https://forms.gle/DDboG1MCcSNRBRHFA), an example of the error explanation you get**.  Remember that you can edit this form at any time.
+> > anything about the L1 because there is a limitation in our software.  You will get an error message.  Please copy this error message and paste it into the corresponding section in our [assignment form](https://forms.gle/DDboG1MCcSNRBRHFA); remember you must sign in and <strong style="color: red;">click on the submit button</strong> in order to save your work.  You can go back to edit the form at any time.
 > >
 <!--
 > > ~~~
 > >  Error in determining L1T prescale for HLT path: 'HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v2' with L1T seed: 'L1_SingleMu14er OR L1_SingleMu16er' using L1GtUtils: error code: 210001. > > (Note: only a single L1T name, not a bit number, is allowed as seed for a proper determination of the L1T prescale!)
 > > ~~~
-> > {: .error} 
+> > {: .error}
 -->
 > >
 > > Fortunately, there is a backup solution for us to check on the prescales.  Details will not be covered here, but you can find more information in [this guide](http://opendata.cern.ch/docs/cms-guide-luminosity-calculation#calculate-trigger-prescales-for-a-run-and-trigger-path) of the CODP.

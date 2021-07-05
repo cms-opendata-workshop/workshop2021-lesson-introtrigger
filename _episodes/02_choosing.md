@@ -14,7 +14,7 @@ keypoints:
 ---
 
 > ## Choosing the dataset
-> During the workshop you will learn more about datasets.  For this exercise, however, imagine that we are interested in searching for [Higgs to taus](http://cms-results.web.cern.ch/cms-results/public-results/publications/HIG-13-004/index.html).  Since we will have these heavy charged leptons in the final step we will choose the [2012 TauPlusX](http://opendata.cern.ch/record/6024) datasets. An example of this simplified analysis is already available at the [CERN Open Portal](http://opendata.web.cern.ch/record/12350).
+> During the workshop you will learn more about datasets.  For this exercise, however, imagine that we are interested in searching for [Higgs to taus](http://cms-results.web.cern.ch/cms-results/public-results/publications/HIG-13-004/index.html).  Since we will have these heavy charged leptons in the final step, we will choose the [2012 TauPlusX](http://opendata.cern.ch/record/6024) datasets. An example of this simplified analysis is already available at the [CERN Open Portal](http://opendata.web.cern.ch/record/12350).
 {: .callout}
 
 ## Exploring the triggers in your dataset
@@ -23,7 +23,7 @@ After choosing the appropriate dataset for you analysis, the first thing you nee
 
 If you click on the [2012 TauPlusX](http://opendata.cern.ch/record/6024) dataset record, you will find a list triggers that were streamed to that dataset.  Now, the question is, which one would you use for this analysis?  Here's where the physics starts playing a role.  Let's imagine we concentrate only on tau lepton pairs of which one tau lepton decays into a muon and two neutrinos and the other tau lepton hadronically, then we shall pick our trigger(s) accordingly.  Note that the published CMS analysis considers additional decay channels.
 
-Let's try to click on one of those triggers, for instance [HLT_IsoMu8_eta2p1_LooseIsoPFTau20](http://opendata.cern.ch/record/6549); there, you can find additional information about this trigger.  One thing to notice, if you check the [2012 run range](http://opendata.cern.ch/record/1002), is that this trigger was only available towards the end of the data taking period. As a matter of fact, since we have only released half of the 2012 data, you will not find that trigger yet in the current releases. 
+Let's try to click on one of those triggers, for instance [HLT_IsoMu8_eta2p1_LooseIsoPFTau20](http://opendata.cern.ch/record/6549); there, you can find additional information about this trigger.  One thing to notice, if you check the [2012 run range](http://opendata.cern.ch/record/1002), is that this trigger was only available towards the end of the data taking period. As a matter of fact, since we have only released half of the 2012 data, you will not find that trigger yet in the current releases.
 
 So we have learned that triggers could be not persistent and be only available for certain runs.  Besides, as it was mentioned, the trigger code evolves.  There may be different versions of this trigger, for instance, `HLT_IsoMu8_eta2p1_LooseIsoPFTau20_v1`, or `v2`, `v3`, etc.
 
@@ -211,11 +211,12 @@ process.source = cms.Source("PoolSource",
     'root://eospublic.cern.ch//eos/opendata/cms/Run2012C/TauPlusX/AOD/22Jan2013-v1/310001/0EF85C5C-A787-E211-AFC9-003048C6942A.root'
     )
 )
-#needed to cache the conditions data
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-#uncomment if using a VM:
+
+#If working with the Docker container you won't have these global tag lines yet.
+#If working in the Virtual Machine, you can comment them out (we do not need them here for now) They will be needed and explained later
+#process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 #process.GlobalTag.connect = cms.string('sqlite_file:/cvmfs/cms-opendata-conddb.cern.ch/FT53_V21A_AN6_FULL.db')
-process.GlobalTag.globaltag = 'FT53_V21A_AN6::All'
+#process.GlobalTag.globaltag = 'FT53_V21A_AN6::All'
 
 process.mytrigger = cms.EDAnalyzer('DemoAnalyzer',
 	#InputCollection = cms.InputTag("muons")
