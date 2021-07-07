@@ -190,7 +190,12 @@ scram b
 ~~~
 {: .language-bash}
 
-Now, let's modify the configuration file `Demo/DemoAnalyzer/demoanalyzer_cfg.py` to adapt it to our exercise.  First, let's go back to logging for each event (and not for every 5) and change the number of events to `-1`, so we can run over all of them. Also, change the `PoolSource` file; replace it with a couple of files from your dataset selection.  In addition, comment out what we had done for extracting the muon information and adding the HLTHighLevel filter, and replace it with parameters we need at configuration.  Do not forget to notice that we are naming our process `mytrigger` now, and not `demo`.  The config file should look something like:
+Now, let's modify the configuration file `Demo/DemoAnalyzer/demoanalyzer_cfg.py` to adapt it to our exercise.  First, let's go back to logging for each event (and not for every 5) and change the number of events to `-1`, so we can run over all of them. Also, change the `PoolSource` file; replace it with a couple of files from our dataset selection.  In addition, comment out what we had done for extracting the muon information and adding the HLTHighLevel filter, and replace it with parameters we need at configuration.  Do not forget to notice that we are naming our process `mytrigger` now, and not `demo`.  
+
+> If you are working with the Virtual Machine, comment out those lines that refer to the `GlobalTag`.  We do not need them yet.  They will be explained later.  If you are working with the Docker container you do not even have them yet, so do not worry about it.
+{: .testimonial}
+
+The final config file should look something like:
 
 ~~~
 import FWCore.ParameterSet.Config as cms
@@ -206,7 +211,7 @@ process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
     #    'file:myfile.root'
-	#'root://eospublic.cern.ch//eos/opendata/cms/Run2011A/ElectronHad/AOD/12Oct2013-v1/20001/001F9231-F141-E311-8F76-003048F00942.root'
+	  #'root://eospublic.cern.ch//eos/opendata/cms/Run2012B/DoubleMuParked/AOD/22Jan2013-v1/10000/1EC938EF-ABEC-E211-94E0-90E6BA442F24.root'
     'root://eospublic.cern.ch//eos/opendata/cms/Run2012B/TauPlusX/AOD/22Jan2013-v1/20000/0040CF04-8E74-E211-AD0C-00266CFFA344.root',
     'root://eospublic.cern.ch//eos/opendata/cms/Run2012C/TauPlusX/AOD/22Jan2013-v1/310001/0EF85C5C-A787-E211-AFC9-003048C6942A.root'
     )

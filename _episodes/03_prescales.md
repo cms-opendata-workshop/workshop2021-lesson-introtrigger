@@ -23,7 +23,7 @@ First make sure you are at the top of your `CMSSW_5_3_32/src` area and that you 
 Now let's clone the *2011* branch of this repository, which will be good for the 2012 data we are working with (except for a couple of changes):
 
 ```bash
-git clone -b 2011 git://github.com/cms-legacydata-analyses/TriggerInfoTool.git
+git clone -b 2011 git://github.com/cms-opendata-analyses/TriggerInfoTool.git
 ```
 
 Compile:
@@ -37,29 +37,44 @@ Edit the config file to choose the triggers we are interested in (you can use `n
 ```bash
 nano TriggerInfoTool/TriggerSimplePrescalesAnalyzer/python/simpleprescalesinfoanalyzer_cfg.py
 ```
-Replace the `PoolSource` files with the ones we used in our last episode, replace the triggerPatterns parameter with a simpler trigger, like `"HLT_Mu12_v??"` (note the wildcard at the end `??`, so we can get the prescales for all versions of this trigger).  Also, **make absolutely sure you have access to the conditions database information needed for 2012, which is different than that for 2011**.  They look like:
+Replace the `PoolSource` files with the ones we used in our last episode, replace the triggerPatterns parameter with a simpler trigger, like `"HLT_Mu12_v??"` (note the wildcard at the end `??`, so we can get the prescales for all versions of this trigger).
+
+> The wildcards follow traditional convention: "?" will match any single character, while "*" will match any string after.
+{: .testimonial}
+
+
+Also, **make absolutely sure you have access to the conditions database information needed for 2012, which is different than that for 2011**.  Here is where there is a key difference between using the **Virtual Machine** or the **Docker container**.  When using the **Virtual Machine**, you have to replace the three lines that have `GlobalTag` in them with:
 
 ~~~
-#needed to cache the conditions data
+#needed to access the conditions data from the Virtual Machine
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-#Uncomment if using CVMFS file system for accessing conditions
-#process.GlobalTag.connect = cms.string('sqlite_file:/cvmfs/cms-opendata-conddb.cern.ch/FT53_V21A_AN6_FULL.db')
+process.GlobalTag.connect = cms.string('sqlite_file:/cvmfs/cms-opendata-conddb.cern.ch/FT53_V21A_AN6_FULL.db')
 process.GlobalTag.globaltag = 'FT53_V21A_AN6::All'
 ~~~
 {: .language-python}
 
+On the other hand, if you are using the Docker container replace them with:
 
-These lines, with `GlobaTag` in them, have to do with being able to read CMSSW database information.  We call this the [Conditions Data](http://opendata.cern.ch/docs/cms-guide-for-condition-database) as we may find values for calibration, alignment, trigger prescales, etc., in there .  One can think of the `GlobalTag` as a label that contains a set of database snapshots that need to be adequate for a point in time in the history of the CMS detector.  For 2012 open data release, the global tag is `FT53_V21A_AN6` (the `::All` string is a flag that tells the frameworks to read *All* the information associated with the tag).  
+~~~
+#needed to access the conditions data from the Docker container
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.GlobalTag.connect = cms.string('sqlite_file:/opt/cms-opendata-conddb/FT53_V21A_AN6_FULL_data_stripped.db')
+process.GlobalTag.globaltag = 'FT53_V21A_AN6_FULL::All'
+~~~
+{: .language-python}
 
-The `connect` variable in one of those lines just modifies they way in which the framework is going to access these snapshots. Here, there is a key difference between using the **Virtual Machine** or the **Docker container**.  When using the Virtual Machine, all three lines need to be **uncommented**. This is because when using VMs, we read these conditions from the shared files system area at CERN (CVMFS), so we need it active.  Read in this way, the conditions will be cached locally in your virtual machine the first time you run and so the CMSSW job will be slow.  Fortunately, we already did this while setting up our VM, so our jobs will run much faster.  This does not really matter for the Docker container.
+These lines, with the `GlobaTag` string in them, have to do with being able to read CMS database information.  We call this the **conditions data** as we may find values for calibration, alignment, trigger prescales, etc., in there .  One can think of the `GlobalTag` as a label that contains a set of database snapshots that need to be adequate for a point in time in the history of the CMS detector.  For the 2012 open data release, the global tag is `FT53_V21A_AN6` or `FT53_V21A_AN6_FULL` (the `::All` string is a flag that tells the frameworks to read *All* the information associated with the tag).  You can find more information in this [CODP guide](http://opendata.cern.ch/docs/cms-guide-for-condition-database).
 
-If you are using the Docker container, the connect line (second line of the group) needs to be **commented out**.
+The `connect` variable in one of those lines just modifies they way in which the framework is going to access these snapshots. For the VM we access them through the shared files system area at CERN (cvmfs).  Read in this way, the conditions will be cached locally in your virtual machine the first time you run and so the CMSSW job will be slow.  Fortunately, we already did this while setting up our VM, so our jobs will run much faster.  In addition, those soft links he had to make are simply pointers to these areas.
 
-Feel free to just replace the whole config file with the example below and make the one change about the connection line we talked about.  
+On the other hand, in the Docker container, these database snapshots live locally in your `/opt/cms-opendata-conddb` directory.  Running over them is much quicker.
 
-> ## Take a look at the config file
+Feel free to just replace the whole config file with the final version below (if using the VM, uncomment and comment out the section in question appropriately).
+
+> ## Take a look at the full config file
 >
 > The config file should look like:
+>
 > ~~~
 > import FWCore.ParameterSet.Config as cms
 >
@@ -78,11 +93,16 @@ Feel free to just replace the whole config file with the example below and make 
 >     )
 > )
 >
-> #needed to get the actual prescale values used from the global tag
-> process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-> #Uncomment the line below if using the VM
+> #uncomment to access the conditions data from the Virtual Machine (and comment out the Docker container set below)
+> #process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 > #process.GlobalTag.connect = cms.string('sqlite_file:/cvmfs/cms-opendata-conddb.cern.ch/FT53_V21A_AN6_FULL.db')
-> process.GlobalTag.globaltag = 'FT53_V21A_AN6::All'
+> #process.GlobalTag.globaltag = 'FT53_V21A_AN6::All'
+>
+> #needed to access the conditions data from the Docker container
+> process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+> process.GlobalTag.connect = cms.string('sqlite_file:/opt/cms-opendata-conddb/FT53_V21A_AN6_FULL_data_stripped.db')
+> process.GlobalTag.globaltag = 'FT53_V21A_AN6_FULL::All'
+>
 >
 > #configure the analyzer
 > #inspired by https://github.com/cms-sw/cmssw/blob/CMSSW_5_3_X/HLTrigger/HLTfilters/interface/HLTHighLevel.h
@@ -110,19 +130,19 @@ cmsRun TriggerInfoTool/TriggerSimplePrescalesAnalyzer/python/simpleprescalesinfo
 >
 > ~~~
 > HLTConfig has changed . . .
-> Begin processing the 1st record. Run 194075, Event 14880766, LumiSection 48 at 29-Sep-2020 03:11:45.700 CEST
+> Begin processing the 1st record. Run 194075, Event 14880766, LumiSection 48 at 07-Jul-2021 01:36:43.256 CEST
 > Currently analyzing trigger HLT_Mu12_v16
-> analyzeSimplePrescales: path HLT_Mu12_v16 [121] prescales L1T,HLT: 50,30
+> analyzeSimplePrescales: path HLT_Mu12_v16 [121] prescales L1T,HLT: 400,30
 >  Trigger path status: WasRun=1 Accept=0 Error =0
-> Begin processing the 2nd record. Run 194075, Event 14844046, LumiSection 48 at 29-Sep-2020 03:11:45.712 CEST
+> Begin processing the 2nd record. Run 194075, Event 14844046, LumiSection 48 at 07-Jul-2021 01:36:43.269 CEST
 > Currently analyzing trigger HLT_Mu12_v16
-> analyzeSimplePrescales: path HLT_Mu12_v16 [121] prescales L1T,HLT: 50,30
+> analyzeSimplePrescales: path HLT_Mu12_v16 [121] prescales L1T,HLT: 400,30
 >  Trigger path status: WasRun=1 Accept=0 Error =0
 > ...
 > ~~~
 > {: .output}
 >
-> Notice that the L1 prescale was 50 for that particular run, whereas the HLT prescale was 30.  We would have to run on many more events to see an `Accept=1`, which would mean the event was accepted by this trigger.  
+> Note that the L1 prescale was 400 for that particular run, whereas the HLT prescale was 30.  We would have to run on many more events to see an `Accept=1`, which would mean the event was accepted by this trigger.  
 >
 {: .solution}
 
