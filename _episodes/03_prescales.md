@@ -43,7 +43,7 @@ Replace the `PoolSource` files with the ones we used in our last episode, replac
 {: .testimonial}
 
 
-Also, **make absolutely sure you have access to the conditions database information needed for 2012, which is different than that for 2011**.  Here is where there is a key difference between using the **Virtual Machine** or the **Docker container**.  When using the **Virtual Machine**, you have to replace the three lines that have `GlobalTag` in them with:
+As in the last section, **make absolutely sure you have access to the conditions database information needed for 2012, which is different than that for 2011**.  Here is where there is a key difference between using the **Virtual Machine** or the **Docker container**.  When using the **Virtual Machine**, you have to replace the three lines that have `GlobalTag` in them with:
 
 ~~~
 #needed to access the conditions data from the Virtual Machine
@@ -63,13 +63,11 @@ process.GlobalTag.globaltag = 'FT53_V21A_AN6_FULL::All'
 ~~~
 {: .language-python}
 
-These lines, with the `GlobaTag` string in them, have to do with being able to read CMS database information.  We call this the **conditions data** as we may find values for calibration, alignment, trigger prescales, etc., in there .  One can think of the `GlobalTag` as a label that contains a set of database snapshots that need to be adequate for a point in time in the history of the CMS detector.  For the 2012 open data release, the global tag is `FT53_V21A_AN6` or `FT53_V21A_AN6_FULL` (the `::All` string is a flag that tells the frameworks to read *All* the information associated with the tag).  You can find more information in this [CODP guide](http://opendata.cern.ch/docs/cms-guide-for-condition-database).
-
+> Remember: These lines, with the `GlobaTag` string in them, have to do with being able to read CMS database information.  We call this the **conditions data** as we may find values for calibration, alignment, trigger prescales, etc., in there .  One can think of the `GlobalTag` as a label that contains a set of database snapshots that need to be adequate for a point in time in the history of the CMS detector.  For the 2012 open data release, the global tag is `FT53_V21A_AN6` or `FT53_V21A_AN6_FULL` (the `::All` string is a flag that tells the frameworks to read *All* the information associated with the tag).  You can find more information in this [CODP guide](http://opendata.cern.ch/docs/cms-guide-for-condition-database).
 The `connect` variable in one of those lines just modifies they way in which the framework is going to access these snapshots. For the VM we access them through the shared files system area at CERN (cvmfs).  Read in this way, the conditions will be cached locally in your virtual machine the first time you run and so the CMSSW job will be slow.  Fortunately, we already did this while setting up our VM, so our jobs will run much faster.  In addition, those soft links he had to make are simply pointers to these areas.
-
 On the other hand, in the Docker container, these database snapshots live locally in your `/opt/cms-opendata-conddb` directory.  Running over them is much quicker.
-
 Feel free to just replace the whole config file with the final version below (if using the VM, uncomment and comment out the section in question appropriately).
+{: .testimonial}
 
 > ## Take a look at the full config file
 >

@@ -192,8 +192,33 @@ scram b
 
 Now, let's modify the configuration file `Demo/DemoAnalyzer/demoanalyzer_cfg.py` to adapt it to our exercise.  First, let's go back to logging for each event (and not for every 5) and change the number of events to `-1`, so we can run over all of them. Also, change the `PoolSource` file; replace it with a couple of files from our dataset selection.  In addition, comment out what we had done for extracting the muon information and adding the HLTHighLevel filter, and replace it with parameters we need at configuration.  Do not forget to notice that we are naming our process `mytrigger` now, and not `demo`.  
 
-> If you are working with the Virtual Machine, comment out those lines that refer to the `GlobalTag`.  We do not need them yet.  They will be explained later.  If you are working with the Docker container you do not even have them yet, so do not worry about it.
-{: .testimonial}
+Also, **make absolutely sure you have access to the conditions database information needed for 2012, which is different than that for 2011**.  Here is where there is a key difference between using the **Virtual Machine** or the **Docker container**.  When using the **Virtual Machine**, you have to replace the three lines that have `GlobalTag` in them with:
+
+~~~
+#needed to access the conditions data from the Virtual Machine
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.GlobalTag.connect = cms.string('sqlite_file:/cvmfs/cms-opendata-conddb.cern.ch/FT53_V21A_AN6_FULL.db')
+process.GlobalTag.globaltag = 'FT53_V21A_AN6::All'
+~~~
+{: .language-python}
+
+On the other hand, if you are using the Docker container replace them with:
+
+~~~
+#needed to access the conditions data from the Docker container
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.GlobalTag.connect = cms.string('sqlite_file:/opt/cms-opendata-conddb/FT53_V21A_AN6_FULL_data_stripped.db')
+process.GlobalTag.globaltag = 'FT53_V21A_AN6_FULL::All'
+~~~
+{: .language-python}
+
+These lines, with the `GlobaTag` string in them, have to do with being able to read CMS database information.  We call this the **conditions data** as we may find values for calibration, alignment, trigger prescales, etc., in there .  One can think of the `GlobalTag` as a label that contains a set of database snapshots that need to be adequate for a point in time in the history of the CMS detector.  For the 2012 open data release, the global tag is `FT53_V21A_AN6` or `FT53_V21A_AN6_FULL` (the `::All` string is a flag that tells the frameworks to read *All* the information associated with the tag).  You can find more information in this [CODP guide](http://opendata.cern.ch/docs/cms-guide-for-condition-database).
+
+The `connect` variable in one of those lines just modifies they way in which the framework is going to access these snapshots. For the VM we access them through the shared files system area at CERN (cvmfs).  Read in this way, the conditions will be cached locally in your virtual machine the first time you run and so the CMSSW job will be slow.  Fortunately, we already did this while setting up our VM, so our jobs will run much faster.  In addition, those soft links he had to make are simply pointers to these areas.
+
+On the other hand, in the Docker container, these database snapshots live locally in your `/opt/cms-opendata-conddb` directory.  Running over them is much quicker.
+
+Feel free to just replace the whole config file with the final version below (if using the VM, *uncomment and comment out the section in question appropriately*).
 
 The final config file should look something like:
 
@@ -217,11 +242,15 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-#If working with the Docker container you won't have these global tag lines yet.
-#If working in the Virtual Machine, you can comment them out (we do not need them here for now) They will be needed and explained later
+#uncomment to access the conditions data from the Virtual Machine (and comment out the Docker container set below)
 #process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 #process.GlobalTag.connect = cms.string('sqlite_file:/cvmfs/cms-opendata-conddb.cern.ch/FT53_V21A_AN6_FULL.db')
 #process.GlobalTag.globaltag = 'FT53_V21A_AN6::All'
+
+#needed to access the conditions data from the Docker container
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.GlobalTag.connect = cms.string('sqlite_file:/opt/cms-opendata-conddb/FT53_V21A_AN6_FULL_data_stripped.db')
+process.GlobalTag.globaltag = 'FT53_V21A_AN6_FULL::All'
 
 process.mytrigger = cms.EDAnalyzer('DemoAnalyzer',
 	#InputCollection = cms.InputTag("muons")
