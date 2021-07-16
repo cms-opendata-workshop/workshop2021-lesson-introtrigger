@@ -202,7 +202,7 @@ process.GlobalTag.globaltag = 'FT53_V21A_AN6::All'
 ~~~
 {: .language-python}
 
-On the other hand, if you are using the Docker container replace them with:
+On the other hand, if you are using the Docker container add these lines:
 
 ~~~
 #needed to access the conditions data from the Docker container
